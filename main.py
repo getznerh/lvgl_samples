@@ -1,6 +1,5 @@
 import lvgl as lv  # NOQA
 #import lvgl_panel_config as cfg
-import task_handler
 import time
 import sys
 
@@ -21,7 +20,7 @@ USE_SQUARELINE = 1 # Test mit dem Squareline Beuspiel von Elecrow
 #---------------------------------------------------------------------------
 # da gibts Speicherfehler, WFIFI for dem Displaytreiber laden !
 
-utils.network_init()
+#utils.network_init()
 
 #---------------------------------------------------------------------------
 # Wifi muss vor dem Dsplay initialisiert werden, sonst Speicherfehler
@@ -32,12 +31,13 @@ import lvgl_panel_init as cfg
 #---------------------------------------------------------------------------
 # hier wird eine Menge von Buttons mit unterschiedlichen Farben generiert
 
-cfg.display.set_power(True)
-cfg.display.init()
-cfg.display.set_backlight(100)
+if cfg.USE_LVGL_MICROPYTHON:
+    cfg.display.set_power(True)
+    cfg.display.init()
+    cfg.display.set_backlight(100)
 
-scrn = lv.screen_active()
-scr = scrn # die Beispiele haben überall scr
+    scrn = lv.screen_active()
+    scr = scrn # die Beispiele haben überall scr
 
 #---------------------------------------------------------------------------
 # Test mit dem Squareline Beuspiel von Elecrow
@@ -712,7 +712,8 @@ if USE_METER:
 
 #---------------------------------------------------------------------------
 # das ist praktisch der Eventloop
-th = task_handler.TaskHandler()
+# import task_handler
+# th = task_handler.TaskHandler()
 
 #------------------------------------------------------------------------------
 # this is a better way to handle updating on a set schedule. This doesn't block
@@ -723,6 +724,7 @@ th = task_handler.TaskHandler()
 # this all works because of the task handler above and it scheduling a task 
 # that interrupts the main thread to update the display
 
+'''
 import utime
 
 def timer_callback(_):
@@ -747,11 +749,13 @@ lv.timer_enable(True) # gilt für ALLE Timer
 # da kommt aber REPL wieder
 print("Timer gestartet, Zurück zum REPL, Task läuft weiter")
 
+'''
+
 # ------------------------------ Guard dog to restart ESP32 equipment --start------------------------
 # Programm muss in einer Schleife bleiben, sonst sieht man die print nicht
 
-# while True:
-#     time.sleep(10)
+while True:
+    time.sleep(1)
 
 # try:
 #     import machine

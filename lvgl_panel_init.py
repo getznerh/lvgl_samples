@@ -22,18 +22,19 @@ FROZEN_MANIFEST=~/frozenmodules-gz/manifest.py
 
 '''
 
-from micropython import const  # NOQA
+USE_LVGL_MICROPYTHON = True
+USE_SQUARELINE_LV = False
+
+#from micropython import const  # NOQA
 import time
 import sys
-#import gc
-import lvgl as lv  # NOQA
-import lcd_bus  # NOQA
 
 # Mit den if xxx Varianten funktionieren die  const() anweisungen nicht, da der Compiler
 # beim ersten Auftreten die Variable als const definiert und die zweite Zuweisung fehlschlägt
-USE_4ZOLL_DISPLAY = True # https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-4.3
+USE_4ZOLL_DISPLAY = False # https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-4.3
 USE_5ZOLL_DISPLAY = False # https://www.elecrow.com/wiki/5.0-inch_ESP32_Display_MicroPython_Tutorial.html#resources
 USE_7ZOLL_DISPLAY = False # https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-7
+USE_SDL_DISPLAY = True
 
 # die Display-Größe
 if USE_4ZOLL_DISPLAY:
@@ -48,40 +49,52 @@ if USE_7ZOLL_DISPLAY:
     _WIDTH = 800
     _HEIGHT = 480
     _USE_SD_CARD = True
+if USE_SDL_DISPLAY:
+    _WIDTH = 800
+    _HEIGHT = 480
+    _USE_SD_CARD = False
 
 I2C_BUS = None
 
+if USE_LVGL_MICROPYTHON:
+    import lvgl as lv  # NOQA
+    import lcd_bus  # NOQA
+    lv.init()
+if USE_SQUARELINE_LV:
+    import gc
+    from display_driver_utils import driver
+    drv = driver( width=_WIDTH, height=_HEIGHT)
 
-lv.init()
 
 # Display und Touch initialisieren
 # wenn das Programm auch unter WSL laufen soll
-if sys.platform in ('linux', 'darwin'):
-    import sdl_pointer
-    import sdl_display
-    
-    bus = lcd_bus.SDLBus(flags=0)
-    #buf = bus.allocate_framebuffer(_WIDTH * _HEIGHT * 3, 0)    
-    
-    display = sdl_display.SDLDisplay(
-        data_bus=bus,
-        display_width=_WIDTH,
-        display_height=_HEIGHT,
-        #frame_buffer1=buf,
-        color_space=lv.COLOR_FORMAT.RGB565        
-    )
-    
-    indev = sdl_pointer.SDLPointer()
+if sys.platform in ('linux', 'darwin', 'win32'):
+    if USE_LVGL_MICROPYTHON:
+        import sdl_pointer
+        import sdl_display
+        
+        bus = lcd_bus.SDLBus(flags=0)
+        #buf = bus.allocate_framebuffer(_WIDTH * _HEIGHT * 3, 0)    
+        
+        display = sdl_display.SDLDisplay(
+            data_bus=bus,
+            display_width=_WIDTH,
+            display_height=_HEIGHT,
+            #frame_buffer1=buf,
+            color_space=lv.COLOR_FORMAT.RGB565        
+        )
+        
+        indev = sdl_pointer.SDLPointer()
 
-    '''
-    # Unter WSL compilieren und ausführen
-    sudo apt update
-    sudo apt install -y libx11-6 libxext6 libxcursor1 libxrandr2 libxinerama1 libxi6
-    sudo apt install -y libsdl2-2.0-0
-    python3 make.py unix DISPLAY=sdl_display INDEV=sdl_pointer
-    chmod +x lvgl_micropy_unix
-    ./lvgl_micropy_unix
-    '''
+        '''
+        # Unter WSL compilieren und ausführen
+        sudo apt update
+        sudo apt install -y libx11-6 libxext6 libxcursor1 libxrandr2 libxinerama1 libxi6
+        sudo apt install -y libsdl2-2.0-0
+        python3 make.py unix DISPLAY=sdl_display INDEV=sdl_pointer
+        chmod +x lvgl_micropy_unix
+        ./lvgl_micropy_unix
+        '''
 
 else: # ESP32S3 Elecrow5" Board SPIRAM OCT 4 MB Flash, 8 MB RAM oder 7" Waveshare 8MB/8MB
     #from machine import Pin

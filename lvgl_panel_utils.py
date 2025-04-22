@@ -14,7 +14,6 @@ import time
 import sys
 import gc
 import lvgl as lv  # NOQA
-import lcd_bus  # NOQA
 
 lv.init()
 
@@ -89,6 +88,21 @@ def sd_read_file(filename):
     # print("readout:", data)
     return data
 
+'''
+# Hinweis von kdschlosser
+
+def create_img_dsc(imgdata):
+    imgdsc = lv.image_dsc_t({'data_size':len(imgdata), 'data':imgdata})
+    return imgdsc
+    
+some_image_data = sd_read_file(YOURIMAGEFILENAME)
+some_image_data_mv = memoryview(some_image_data)
+some_img_dsc = create_img_dsc(some_image_data_mv)
+
+image = lv.image(lv.screen_active())
+image.set_src(some_img_dsc)
+
+'''
 #---------------------------------------------------------------------------
 # Die Daten einen PNG Bildes von SD oder Filesystem lesen
 

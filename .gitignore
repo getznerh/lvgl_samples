@@ -1,0 +1,7 @@
+SDLTest/
+SquareLine/
+*.exe
+*workspace
+
+# Python cache files
+__pycache__/
